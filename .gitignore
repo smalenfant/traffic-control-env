@@ -1,0 +1,4 @@
+.vagrant
+.cache
+traffic_control
+*.swp

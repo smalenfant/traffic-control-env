@@ -1,0 +1,54 @@
+---
+# file: traffic-ops-dev.yml
+
+- hosts: traffic-ops-dev
+  sudo: yes
+  tasks:
+    - name: Create RPM cache directory
+      file: name='/vagrant/.cache' state=directory
+
+    - name: Change Yum Cache directory
+      ini_file: dest=/etc/yum.conf section=main option=cachedir value='/vagrant/.cache'
+
+    - name: Enable Yum to keep files after installation
+      ini_file: dest=/etc/yum.conf section=main option=keepcache value=1
+
+    - name: Installation of base packages
+      yum: name={{ item }} state=present
+      with_items:
+        - epel-release
+        - rpm-build
+        - openssl-devel
+        - git
+        - hg
+        - mysql-devel
+        - mysql-server
+        - libpcap-devel
+        - libcurl-devel
+
+    - name: Install of Extra packages
+      yum: name={{ item }} state=present
+      with_items:
+       - golang
+       - cpan
+
+    - name: Create some directories for GO
+      file: {{ item }} state=directory owner=vagrant group=vagrant
+      with_items:
+        - /home/vagrant/go
+
+    - name: Configure GOPATH
+      lineinfile:
+        dest: "/home/vagrant/.bashrc"
+        line: "export GOPATH=/home/vagrant/go"
+        
+
+#        export GOPATH=/home/vagrant/go
+#        mkdir -p $GOPATH
+#        echo "export GOPATH=$GOPATH" >> /home/vagrant/.bash_profile
+#        export PERL_MM_USE_DEFAULT=1
+#        export PERL_MM_NONINTERACTIVE=1
+#        export AUTOMATED_TESTING=1
+#        /usr/bin/cpan -if YAML
+#        /usr/bin/cpan -if CPAN
+#        /usr/bin/cpan -if MIYAGAWA/Carton-v1.0.15.tar.gz

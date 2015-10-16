@@ -25,6 +25,7 @@
         - mysql-server
         - libpcap-devel
         - libcurl-devel
+        - libselinux-python
 
     - name: Install of Extra packages
       yum: name={{ item }} state=present
@@ -33,7 +34,7 @@
        - cpan
 
     - name: Create some directories for GO
-      file: {{ item }} state=directory owner=vagrant group=vagrant
+      file: name={{ item }} state=directory owner=vagrant group=vagrant
       with_items:
         - /home/vagrant/go
 
@@ -41,7 +42,7 @@
       lineinfile:
         dest: "/home/vagrant/.bashrc"
         line: "export GOPATH=/home/vagrant/go"
-        
+
 
 #        export GOPATH=/home/vagrant/go
 #        mkdir -p $GOPATH

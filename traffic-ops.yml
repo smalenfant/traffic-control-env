@@ -4,6 +4,9 @@
 - hosts: traffic-ops-dev
   sudo: yes
   tasks:
+
+    - debug: var=ansible_env
+
     - name: Create RPM cache directory
       file: name='/vagrant/.cache' state=directory
 
@@ -26,12 +29,15 @@
         - libpcap-devel
         - libcurl-devel
         - libselinux-python
+        - perl-CPAN
+        - perl-YAML
+        - perl-devel
+        - gcc
 
     - name: Install of Extra packages
       yum: name={{ item }} state=present
       with_items:
        - golang
-       - cpan
 
     - name: Create some directories for GO
       file: name={{ item }} state=directory owner=vagrant group=vagrant
@@ -43,6 +49,31 @@
         dest: "/home/vagrant/.bashrc"
         line: "export GOPATH=/home/vagrant/go"
 
+    - name: Test for cpanm
+      shell: perl -MApp::cpanminus -e1
+      register: result
+      ignore_errors: true
+
+    - name:  Install CPANm
+      shell: curl -L http://cpanmin.us | perl - App::cpanminus
+      when:  result|failed
+
+    - name: Add /usr/local/bin to PATH
+      lineinfile:
+        dest: "/etc/profile.d/cpanm.sh"
+        line: "pathmunge /usr/local/bin"
+        create: yes
+
+    - name: Ensure required Perl modules installed
+      yum: name={{ item }} state=present
+      with_items:
+        - perl-Test-Harness
+        - perl-Time-HiRes
+
+    - name: Install Carton
+      cpanm: name=MIYAGAWA/Carton-v1.0.15.tar.gz
+      environment:
+        PATH: "{{ansible_env.PATH}}:/usr/local/bin"
 
 #        export GOPATH=/home/vagrant/go
 #        mkdir -p $GOPATH

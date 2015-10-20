@@ -5,8 +5,6 @@
   sudo: yes
   tasks:
 
-    - debug: var=ansible_env
-
     - name: Create RPM cache directory
       file: name='/vagrant/.cache' state=directory
 
@@ -15,6 +13,11 @@
 
     - name: Enable Yum to keep files after installation
       ini_file: dest=/etc/yum.conf section=main option=keepcache value=1
+
+    - name: Create file with root user
+      ini_file: dest=~/.my.cnf section=client option=user value=root
+
+    #- ini_file: dest=~/.my.cnf section=client option=password value=""
 
     - name: Installation of base packages
       yum: name={{ item }} state=present
@@ -29,6 +32,7 @@
         - libpcap-devel
         - libcurl-devel
         - libselinux-python
+        - MySQL-python
         - perl-CPAN
         - perl-YAML
         - perl-devel
@@ -38,6 +42,13 @@
       yum: name={{ item }} state=present
       with_items:
        - golang
+    
+    - name: Start MySql
+      service: name=mysqld enabled=yes state=started
+
+    - mysql_user: name=to_user password=twelve priv=to_development.*:ALL,GRANT state=present
+    - mysql_user: name=to_user password=twelve priv=to_test.*:ALL,GRANT state=present
+    - mysql_user: name=to_user password=twelve priv=to_integration.*:ALL,GRANT state=present
 
     - name: Create some directories for GO
       file: name={{ item }} state=directory owner=vagrant group=vagrant

@@ -1,0 +1,103 @@
+---
+# file: traffic-control-dev.yml
+
+- hosts: traffic-control-dev
+  sudo: yes
+  vars:
+   - jdk_url: http://download.oracle.com/otn-pub/java/jdk/7u67-b01/jdk-7u67-linux-x64.rpm
+   - download_folder: /vagrant/.cache/download
+   - maven_url: http://ftp.wayne.edu/apache/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz
+  tasks:
+
+    - name: Create RPM cache directory
+      file: name={{ item }} state=directory
+      with_items:
+       - /vagrant/.cache
+       - /vagrant/.cache/download
+
+    - name: Change Yum Cache directory
+      ini_file: dest=/etc/yum.conf section=main option=cachedir value='/vagrant/.cache'
+
+    - name: Enable Yum to keep files after installation
+      ini_file: dest=/etc/yum.conf section=main option=keepcache value=1
+
+    #- name: Create file with root user
+    #  ini_file: dest=~/.my.cnf section=client option=user value=root
+
+    #- ini_file: dest=~/.my.cnf section=client option=password value=""
+
+
+    - name: Installation of base packages
+      yum: name={{ item }} state=present
+      with_items:
+        - epel-release
+        - rpm-build
+        #- openssl-devel
+        #- git
+        #- hg
+        #- mysql-devel
+        #- mysql-server
+        #- libpcap-devel
+        #- libcurl-devel
+        - libselinux-python
+        #- MySQL-python
+        - perl-CPAN
+        - perl-YAML
+        - perl-devel
+        - gcc
+
+    - name: Install RpmForge repository
+      yum: name=http://pkgs.repoforge.org/rpmforge-release/rpmforge-release-0.5.3-1.el6.rf.x86_64.rpm state=present
+
+    - name: Disable rpmforge repo by default
+      ini_file: dest=/etc/yum.repos.d/rpmforge.repo section=rpmforge option=enabled value=0
+
+    - name: Install newer version of Git
+      yum: name=git-1.7.12.4 enablerepo=rpmforge-extras state=present
+
+    - name: Install GoLang
+      yum: name=golang state=present
+    
+    - name: Create some directories for GO
+      file: name={{ item }} state=directory owner=vagrant group=vagrant
+      with_items:
+        - /home/vagrant/go
+
+    - name: Configure GOPATH
+      lineinfile:
+        dest: "/home/vagrant/.bashrc"
+        line: "export GOPATH=/home/vagrant/go"
+
+    # - name: Download Oracle Java JDK
+    #  get_url: src=http://download.oracle.com/otn-pub/java/jdk/7u67-b01/jdk-7u67-linux-x64.rpm 
+    #           dest=/vagrant/.cache/jdk-7u67-linux-x64.rpm 
+    #           headers="Cookie:oraclelicense=accept-securebackup-cookie" 
+    #           #creates=/vagrant/.cache/jdk-7u67-linux-x64.rpm 
+
+    - name: Download Oracle Java SDK
+      command: "wget -q -O {{ jdk_url|basename }} --no-check-certificate --no-cookies --header 'Cookie: oraclelicense=accept-securebackup-cookie' {{ jdk_url }}"
+      args:
+        chdir: "{{ download_folder }}"  
+        creates: "{{ jdk_url|basename }}"
+      #creates={{ download_folder }}/{{ jdk_url|basename }}"
+   
+    - name: Install Oracle Java JDK
+      yum: name="{{ download_folder }}/{{ jdk_url|basename }}" state=present
+
+    - name: Download Apache Maven
+      get_url: url={{ maven_url }} dest={{ download_folder}}/{{ maven_url|basename }}
+
+    # Ansible 1.9 bug... 
+    # - name: Extract Apache Maven
+    #   unarchive: src={{ download_folder }}/{{ maven_url|basename }} dest=/opt
+
+    - name: Extract Apache Maven
+      command: tar xvfz {{ download_folder }}/{{ maven_url|basename }}
+      args:
+       chdir: /opt
+       creates: /opt/apache-maven-3.3.9/README.txt
+
+    - name: Add Maven to path
+      lineinfile:
+        dest: /home/vagrant/.bashrc
+        line: export PATH=/opt/apache-maven-3.3.9/bin:$PATH

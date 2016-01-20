@@ -1,31 +1,40 @@
 # traffic-control-env
 
-Environment for setting up Traffic Control
+Environment to build Traffic Control CDN Components. Uses Ansible playbooks to download and setup the environment. 
+
+### Traffic Control Build
+
+- Download and Install required software
+- Build all components (Not completed)
+
+### Traffic Ops DEV
 
 - Installs all the packages required
 - Setup MySQL database
 - Simply follow the existing Traffic Ops DEV instruction (needs work!)
+- Not quite finished, but useful to see how it can handle cpan.
 
-## Setup
+### Setup - Vagrant
 
-This works great on OS X. That's the only way I tested so far.
+This works great under vagrant in OS X. Only method tested.
 
-- Install Ansible - <http://docs.ansible.com/ansible/intro_installation.html>
+- Install Ansible on the Host Server - <http://docs.ansible.com/ansible/intro_installation.html>
 - Install Vagrant - <https://www.vagrantup.com/downloads.html>
-- Install the Ansible plugin `vagrant plugin install ansible`
+- Install the Ansible Vagrant plugin `vagrant plugin install ansible`
 - Clone the Traffic Control ENV `git clone https://github.com/smalenfant/traffic-control-env.git`
-- You can also clone traffic_control under there too...
+- Clone traffic_control under traffic-control-env and checkout required branch/tag
 
-```
-OSX:traffic-control-env user$ ls -l
-total 24
--rw-r--r--   1 smalenfa  staff    65 Oct 16 18:19 README.md
--rw-r--r--   1 smalenfa  staff  1138 Oct 16 18:33 Vagrantfile
--rw-r--r--   1 smalenfa  staff  2867 Oct 19 20:13 traffic-ops.yml
-drwxr-xr-x  16 smalenfa  staff   544 Oct 16 18:20 traffic_control
-```
-- Start the Guest VM `vagrant up traffic-ops-dev`
+## Execute Vagrant
 
-## What after?
+### Bring up Vagrant
 
-Missing some documentation about the Perl variables needed.
+- `vagrant up rpm-build`
+
+### Login the Vagrant box
+
+- `vagrant ssh rpm-build`
+- `cd /vagrant/traffic_control`
+- `./build/build.sh <component>`
+
+Files will be available in the Vagrant box as well as the host OS in the <workdir> directory.
+

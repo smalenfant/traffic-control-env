@@ -86,12 +86,3 @@
       environment:
         PATH: "{{ansible_env.PATH}}:/usr/local/bin"
 
-#        export GOPATH=/home/vagrant/go
-#        mkdir -p $GOPATH
-#        echo "export GOPATH=$GOPATH" >> /home/vagrant/.bash_profile
-#        export PERL_MM_USE_DEFAULT=1
-#        export PERL_MM_NONINTERACTIVE=1
-#        export AUTOMATED_TESTING=1
-#        /usr/bin/cpan -if YAML
-#        /usr/bin/cpan -if CPAN
-#        /usr/bin/cpan -if MIYAGAWA/Carton-v1.0.15.tar.gz

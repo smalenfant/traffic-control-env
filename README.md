@@ -34,6 +34,7 @@ This works great under vagrant in OS X. Only method tested.
 
 - `vagrant ssh rpm-build`
 - `cd /vagrant/traffic_control`
+- `scl enable git19 bash`
 - `./build/build.sh <component>`
 
 Files will be available in the Vagrant box as well as the host OS in the <workdir> directory.

@@ -2,58 +2,42 @@
 # file: traffic-control-dev.yml
 
 - hosts: traffic-control-dev
-  sudo: yes
+  become: yes
   vars:
-   - jdk_url: http://download.oracle.com/otn-pub/java/jdk/7u67-b01/jdk-7u67-linux-x64.rpm
-   - download_folder: /vagrant/.cache/download
-   - maven_url: http://ftp.wayne.edu/apache/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz
+   #jdk_url: http://download.oracle.com/otn-pub/java/jdk/7u67-b01/jdk-7u67-linux-x64.rpm
+   #jdk_url: http://download.oracle.com/otn-pub/java/jdk/8u92-b14/jdk-8u92-linux-x64.rpm
+   jdk_url: http://download.oracle.com/otn-pub/java/jdk/8u102-b14/jdk-8u102-linux-x64.rpm
+   download_folder: /vagrant/{{ ansible_distribution_major_version }}/.cache/download
+   maven_url: http://ftp.wayne.edu/apache/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz
   tasks:
 
     - name: Create RPM cache directory
       file: name={{ item }} state=directory
       with_items:
-       - /vagrant/.cache
-       - /vagrant/.cache/download
+       - /vagrant/{{ ansible_distribution_major_version }}/.cache
+       - /vagrant/{{ ansible_distribution_major_version }}/.cache/download
 
     - name: Change Yum Cache directory
-      ini_file: dest=/etc/yum.conf section=main option=cachedir value='/vagrant/.cache'
+      ini_file: dest=/etc/yum.conf section=main option=cachedir value='/vagrant/{{ ansible_distribution_major_version }}/.cache'
 
     - name: Enable Yum to keep files after installation
       ini_file: dest=/etc/yum.conf section=main option=keepcache value=1
-
-    #- name: Create file with root user
-    #  ini_file: dest=~/.my.cnf section=client option=user value=root
-
-    #- ini_file: dest=~/.my.cnf section=client option=password value=""
-
 
     - name: Installation of base packages
       yum: name={{ item }} state=present
       with_items:
         - epel-release
+        - centos-release-scl
         - rpm-build
-        #- openssl-devel
-        #- git
-        #- hg
-        #- mysql-devel
-        #- mysql-server
-        #- libpcap-devel
-        #- libcurl-devel
+        - git
         - libselinux-python
-        #- MySQL-python
         - perl-CPAN
         - perl-YAML
         - perl-devel
         - gcc
 
-    - name: Install RpmForge repository
-      yum: name=http://pkgs.repoforge.org/rpmforge-release/rpmforge-release-0.5.3-1.el6.rf.x86_64.rpm state=present
-
-    - name: Disable rpmforge repo by default
-      ini_file: dest=/etc/yum.repos.d/rpmforge.repo section=rpmforge option=enabled value=0
-
-    - name: Install newer version of Git
-      yum: name=git-1.7.12.4 enablerepo=rpmforge-extras state=present
+    - name: Install Git 1.9 from SCL
+      yum: name=git19 state=present
 
     - name: Install GoLang
       yum: name=golang state=present

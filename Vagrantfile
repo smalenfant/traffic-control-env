@@ -6,7 +6,7 @@ VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
-  config.vm.box = "bento/centos-6.7"
+  config.vm.box = "bento/centos-6.8"
   #config.vm.box = "bento/centos-7.2"
 
   # To be used with Traffic Ops RPM
@@ -24,13 +24,18 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
    box.vm.hostname = "rpm-build.kabletown.net"
   end
 
+  config.vm.define "rpm-build-7", primary: true do |box|
+   box.vm.hostname = "rpm-build-7.kabletown.net"
+   config.vm.box = "bento/centos-7.2"
+  end
+
   config.vm.provision "ansible" do |ansible|
     ansible.sudo = true
     ansible.playbook = "traffic-control.yml"
     ansible.groups = {
       "traffic-ops" => ["traffic-ops-01"],
       "traffic-ops-dev" => ["traffic-ops-dev"],
-      "traffic-control-dev" => ["rpm-build"],
+      "traffic-control-dev" => ["rpm-build","rpm-build-7"],
       "vagrant:children" => ["traffic-control-dev", "traffic-ops-dev", "traffic-ops"]
     }
   end

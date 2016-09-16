@@ -2,7 +2,7 @@
 # file: traffic-ops-dev.yml
 
 - hosts: traffic-ops-dev
-  sudo: yes
+  become: yes
   tasks:
 
     - name: Create RPM cache directory
